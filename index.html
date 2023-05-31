@@ -7,33 +7,56 @@
     <title>Knowledge Accumulator.</title>
 </head>
 <body>
-
     <div class="navbar">
         <div class="nav-container"></div>
         <a href="#notes">Notes</a>
         <a href="#about">About</a>
-        <a href="#contact">Contact</a>
     </div>
+
+    <section id="intro-home">
+        <p>- Site creted mainly to store my notes and AI research/papers accumulated throughout study sessions I have.</p>
+        <p>---- (I'm an aspiring Machine Learning Engineer, not a Web Developer, give me a break here haha).</p>
+        <p>- It does not have significant structure/functionality to it. Keeping it simple for simplicity sake.</p>
+        <p>- You can follow what I have learned over the past days/weeks, as I endeavour on this AI journey. Join me!</p>
+        <p>- To learn more about me (and get my contact info if needed), visit the About section.</p>
+    </section>
 
     <section id="notes">
         <h3>Notes</h3>
-        <h4>May 29th, 2023</h4>
-        <p>Learned about <a href="https://arxiv.org/pdf/2205.14135.pdf">Flash Attention</a>, worked on MosaicML's MPT-7B model,</p>
-            
-        <p></p>Experiments with OpenAI's APT (text-generation, prompt testing, etc.)</p>
-        <p> development of sites used for accumulation of notes.</p>
+        <h4>May 29th, 2023 || Total work/study time: ~ 4 hours.</h4>
+        <p>Learned about <a href="https://arxiv.org/pdf/2205.14135.pdf">Flash Attention</a>, and <a href="https://arxiv.org/pdf/2108.12409.pdf">ALiBi</a>, which are mechanisms used to produce the
+            <a href="https://huggingface.co/mosaicml/mpt-7b">MosaicML MPT-7B model.</a></p>
+        <p></p>Experiments with <a href="https://platform.openai.com/docs/introduction">OpenAI's API</a> (text-generation, prompt testing, etc.)</p>
+        <p> development of <a href="https://wtergan.github.io/">site </a>used for accumulation of notes.</p>
+        <br>
+        <p><a href="https://arxiv.org/pdf/2205.14135.pdf">Flash Attention:</a></p>
+        <ul>
+            <li>Fast and Memory-Efficient Exact Attention, to be exact (pun intended).</li><br>
+            <li>Designed to help speed up the transformer architecture by reordering the attention computation and using tiling to reduce the number of memory reads and writes between different levels of GPU memory.</li><br>
+            <li>Splits the original <i>Q, K, V</i> matrices <i>(N * embed)</i> into multiple blocks of size B. It then loads the K, V blocks from the high-bandwidth memory (HBM) to the fast on-chip SRAM. In each block, the FlashAttention loops over blocks of Q matrix, loading them into SRAM, and writing the output of the attention back to HBM.</li><br>
+            <li>During backpropagation, the intermediate matrices (softmax, dot product, etc), do not need to be loaded from the HBM again.</li><br>
+            <li>This speeds up the performance of various transformers substantially when training, compared to baseline implementations.</li><br>
+            <li>While performance is sped up, and less memory access needed, still more compute, although advances in GPU allieviates this bottleneck.</li><br>
+        </ul>
 
-    </section>
+        <p><a href="https://arxiv.org/pdf/2108.12409.pdf">ALiBi:</a></p></li>
+        <ul>
+            <li>Attention with Linear Biases.</li><br>
+            <li>Serves as a replacement for traditional positional embeddings (like sinusoidal functions), and allows the model to be trained with high throughput and stable convergence.</li><br>
+            <li>The paper attempted to address a fundamental problem thats inherent in transformer models: "How can it handle input sequences that are longer than the ones it saw during training? <i>(extrapolation).</i>"</li><br>
+            <li>They introduced Attention with Linear Biases to try to solve this issue. ALiBi do not add postional embeddings to the input word embeddings, but rather, biases query-key attention scores with a penality that is proportional to their distance. This allows the model to extrapolate, as well as achieve similar perplexity to the typical sinusoidal method when used on larger, billion+ parameter models and better perplexity to the typical sinusoidal method when used on smaller models with parameters less than 1 billion.</li><br>
+        </ul>
 
-    <section id="about">
-        <h2>About Me</h2>
-        <p><a href="https://github.com/wtergan">Github.</a></p>
-        <p><a href="https://twitter.com/wtergan">Twitter.</a></p>
-    </section>
+        <p>These mechanisms were used to produce the <a href="https://huggingface.co/mosaicml/mpt-7b">MPT-7B model</a> by <a href="https://www.mosaicml.com/">MosaicML.</a></p>
+        <ul>
+            <li>One of several models in a family of MosaicPretrainedTransformer (MPT) models. </li><br>
+            <li>This specific 7B variant a decoder-style transformer model thats been pretrained by MosaicML on 1T tokens.</li><br>
+            <li>The mechanisms outline above allows the model to properly handle extremely long inputs (and thus outputs), as well as faster training, inference.</li><br>
+            <li>Dataset similar in volume to the 1T token dataset used to train <a href="https://arxiv.org/pdf/2302.13971.pdf">LLaMA</a></li><br>
+            <li>I played around with this model, here is the <a href="https://github.com/wtergan/MPT-7B/blob/main/MPT_7B.ipynb">github repo</a> for access to the Google Colab notebook used for playing. I encourage you to check out the notebook, as I explain in depth various libraries used for usage of the model, as well as info on how to use said libraries.</li>
+        </ul>
 
-    <section id="contact">
-        <h2>Contact</h2>
-        <p>willdoraniv@gmail.com</p>
+        <p></p>
     </section>
 
 </body>

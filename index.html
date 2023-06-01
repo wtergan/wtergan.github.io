@@ -23,6 +23,55 @@
 
     <section id="notes">
         <h3>Notes</h3>
+        <h4>May 31st, 2023 || Totak work/study: ~ 4 hours.</h4>
+        <p>Major reading list today: quite a few AI papers consumed. Lets go through it.</p>
+        <p>Most important paper read was Open AI paper, released today, called, <a href="https://cdn.openai.com/improving-mathematical-reasoning-with-process-supervision/Lets_Verify_Step_by_Step.pdf">Lets Verify Step By Step.</a></p>
+        <p>But in order to understand the aformentioned paper, we should dive into some prior papers that involves helping LLMs reason.</p>
+        <p><a href="https://arxiv.org/pdf/2201.11903.pdf">Chain-Of-Thought</a></p>
+        <ul>
+            <li>Paper released in January that described the process called Chain-Of-Thought prompting (CoT), which is simply a seies of reasoning steps between the problem and subsequent solution that improve the LLM's ability to perform complex reasoning.</li>
+            <li>Recall, that traditional few-shot prompting works badly on tasks that requires reasoning, and scale does not necessarily allieviates this issue.</li>
+            <li>CoT allows the model(s) break a problem down into multiple intermediate steps.</li>
+            <li>Since this method works great for reasoning tasks, performance seen most improvement with math (arithmetic) problems, commonsense reasoning, symbolic manipulation.</li>
+            <li>Great video lecture from Jason Wei, one of the authors of the paper: <a href="https://www.youtube.com/watch?v=0Z1ZwY2K2-M">YouTube</a></li>
+        </ul>
+        <p><a href="https://arxiv.org/pdf/2203.11171.pdf">Self-Consistency</a></p>
+        <ul>
+            <li>Released only two months ago, March 2023, describes a new decoding/reasoning strategy called Self-Consistency, which ia an improvement on CoT.</li>
+            <li>Works by sampling a set of reasoning paths, selecting the most consistent answer by marginalizing out the sampled reasoning paths. This contrast with CoT, which uses naive greedy decoding.</li>
+            <li>This mirrors the notion that complex reasoning involves creating multiple ways of thinking that solves a problem, and deciding which thinking process works pest, rather than a simple serial process.</li>
+            <li>Obvious boosts in performance over its predeccessor (Upwards of 18% improvement on the GSM8K over CoT prompting, for instance).</li>
+        </ul>
+        <p><a href="https://arxiv.org/pdf/2305.10601.pdf">Tree-Of-Thought</a></p>
+        <ul>
+            <li>Again, a reasoning method that serves as an improvement over Self-Consistency for reasoning tasks.</li>
+            <li>Exhibits a tree-like structure, composed of multiple reasoning paths and self-evaluation choices that help the model(s) decide the next action to take, backtracking to previous decisions if current path is not optimal.</li>
+            <li>This can be seen as a generalization of the previous methods, and is inspired by research on thinking mechanisms humans use, such as fast (System1) and slow (System2) thinking/modes. Traditional LLMs exhibit System1 behavior, as their inherent nature is to simply predict the next token. Tree-Of-Thought is analogous to System2 behavior, as the model attempts to explore a variety of thinking paths to take, and can backtrack or look ahead to make better decisions.</li>
+            <li>Video that explains this method in more detail: <a href="https://www.youtube.com/watch?v=ut5kp56wW_4&t=324s">Youtube</a></li>
+        </ul>
+        <p>The papers above show various methods that can allow the LLMs to imitate reason. With this context in mind, we can dive into Open AI's paper released today:
+        <p><a href="https://cdn.openai.com/improving-mathematical-reasoning-with-process-supervision/Lets_Verify_Step_by_Step.pdf">Lets Verify Step By Step.</a></p>
+        <ul>
+            <li>Based off <a href="https://arxiv.org/pdf/2211.14275.pdf">Uesato et al. (2022)</a> paper from DeepMind, which was one of the first to describe the Outcome-Supervised Reward Models (ORMs) and Proccess-Supervised Reward Models (PRMs), the former being trained using only the final result of the model's CoT, and the latter being trained on human feedback for each step in the CoT.</li>
+            <li>OpenAI improved on the aformentioned work by utilizing a better base model (in this csse, GPT-4 was used), more human feedback, and a more challenging <a href="https://arxiv.org/pdf/2103.03874.pdf">MATH dataset.</a></li>
+            <li>They also released <a href="https://github.com/openai/prm800k">PRM800K</a>, which is a dataset of 800K step-level human feedback labels used to train their reward model for this task.</li><br>
+            <li>Their methodology is as follows: </li><br>
+            <ul>
+                <li>Use a single fixed model (generator) to create all solutions. They do not use Reinforcement Learning (RL). They only train this model to produce solutions in a newline delimited, step-by-step format (so that solution is always in desired format).</li><br>
+                <li>To get the process supervision data, they use human data-labelers that assign each step in the solution given by the generator as positive, negative, or neutral, where neutral implies ambiguity. This resultant dataset is called PRM800K, which is released to the public.</li><br>
+                <li>Get a proficient enough model for usage (GPT-4 is the obvious choice for this task). No model  with RL applied is needed. Just finetune model on a dataset of math-relevant tokens (in this case 1.5B of them), to improve the base model's math reasoning.</li><br>
+                <li>Train the ORM to predict if each solution is correct or incorrect (note that the PRM800K used in this case is slightly different from the PRM version, as the PRM version uses active learning and is biased towards answer-incorrect solutions).</li><br>
+                <li>Train the PRM to predict the correctness of each step after the last token in each step. The score for a solution is the probabilty that every step is correct under the PRM. They chose to supervise only up to the first incorrect step, making the comparison between this and ORM more straightforward.</li><br>
+                <li>Do the aformentioned training using the large base model as well as a smaller model by using the large scale PRM to supervise the smaller model. </li><br>
+                <li>After the training stages were complete, they evaluated their reward models using problems from the MATH dataset, which is a dataset of 12,500 mathemathical problems, where each problem has a step-by-step solution (this dataset is perfect for this evaluation for the process-supervison in particular due to this nature). </li>
+            </ul><br>
+            <li>Results: </li><br>
+            <ul>
+                <li>What they found was that process supervision, and their resultant PRMs gives much better results than outcome supervision and its resultant ORMs on tasks involving mathematival reasoning.  They also found that they can reduce the cost of human labeling by allowing the reward model to surface only the mst important and valuable model completions for human feedback.</li><br>
+                <li>For example, they measure the performance of their reward models on AP Calculus, AP Chemistry, AP Physics, and AMC10/12, and found that the PRM performed signicicantly better than its ORM equiuvalent, an upwards of around 20% for some of the courses. </li><br>
+                <li>As a by-product of the PRM performance, they found that there are an emergent alignment benefit to using process-supervison: it directly trains the model to produce chain-of-thought that is endorsed by humans, meaning that the models' reasoning can be aligned to be closer to that of humans, thereby reducing the alignment tax (this tax arises then the model's underlying peformance is hindered due to human intervention, particularly when RLHF is involved).</li>
+            </ul>
+        </ul>
         <h4>May 29th, 2023 || Total work/study time: ~ 4 hours.</h4>
         <p>Learned about <a href="https://arxiv.org/pdf/2205.14135.pdf">Flash Attention</a>, and <a href="https://arxiv.org/pdf/2108.12409.pdf">ALiBi</a>, which are mechanisms used to produce the
             <a href="https://huggingface.co/mosaicml/mpt-7b">MosaicML MPT-7B model.</a></p>
